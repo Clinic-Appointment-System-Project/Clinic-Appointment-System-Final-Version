@@ -1,4 +1,5 @@
-// Centralized API Client for Clinic Appointment Booking System
+// Frontend API Service - Centralized HTTP client
+// Matches REST API Contract: Page 5 & Page 9
 
 const BASE_URL = '/api';
 
@@ -16,20 +17,28 @@ const getHeaders = (includeAuth = true) => {
 };
 
 const handleResponse = async (response) => {
-  let data;
-  try {
-    data = await response.json();
-  } catch (err) {
-    data = { success: false, message: 'Phản hồi từ máy chủ không hợp lệ' };
+  if (response.status === 204) {
+    return { success: true };
+  }
+
+  let data = null;
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
   }
 
   if (!response.ok) {
-    // Nếu token hết hạn hoặc không hợp lệ (401), và không phải request login/register
-    if (response.status === 401 && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
-      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
-    }
-    const errorMsg = data.message || `Lỗi yêu cầu (${response.status})`;
-    throw new Error(errorMsg);
+    const errorObj = data?.error || {};
+    const message = errorObj.message || data?.message || `Request failed with status ${response.status}`;
+    const error = new Error(message);
+    error.status = response.status;
+    error.code = errorObj.code || 'error';
+    error.details = errorObj.details || {};
+    throw error;
   }
 
   return data;
@@ -41,147 +50,46 @@ const request = async (url, options = {}) => {
     return await handleResponse(res);
   } catch (err) {
     if (err.name === 'TypeError' && (err.message.includes('fetch') || err.message.includes('NetworkError'))) {
-      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại dịch vụ backend hoặc kết nối mạng.');
+      const netErr = new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra Flask server đang chạy.');
+      netErr.code = 'network_error';
+      throw netErr;
     }
     throw err;
   }
 };
 
 export const api = {
-  // --- AUTH ---
+  // 1. Register (Patient) - POST /api/register
   register: (payload) =>
-    request(`${BASE_URL}/auth/register`, {
+    request(`${BASE_URL}/register`, {
       method: 'POST',
       headers: getHeaders(false),
       body: JSON.stringify(payload)
     }),
 
+  // 2. Login (All) - POST /api/login
   login: (payload) =>
-    request(`${BASE_URL}/auth/login`, {
+    request(`${BASE_URL}/login`, {
       method: 'POST',
       headers: getHeaders(false),
       body: JSON.stringify(payload)
     }),
 
-  getMe: () =>
-    request(`${BASE_URL}/auth/me`, {
-      method: 'GET',
-      headers: getHeaders(true)
-    }),
-
-  updateProfile: (payload) =>
-    request(`${BASE_URL}/auth/profile`, {
-      method: 'PUT',
-      headers: getHeaders(true),
-      body: JSON.stringify(payload)
-    }),
-
-  // --- DOCTORS ---
-  getDoctors: (params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return request(`${BASE_URL}/doctors?${query}`, {
-      method: 'GET',
-      headers: getHeaders(false)
-    });
-  },
-
-  getDoctorDetail: (id) =>
-    request(`${BASE_URL}/doctors/${id}`, {
-      method: 'GET',
-      headers: getHeaders(false)
-    }),
-
-  createDoctor: (payload) =>
+  // 3. View Doctor List (Patient/Public) - GET /api/doctors
+  getDoctors: () =>
     request(`${BASE_URL}/doctors`, {
-      method: 'POST',
-      headers: getHeaders(true),
-      body: JSON.stringify(payload)
-    }),
-
-  updateDoctor: (id, payload) =>
-    request(`${BASE_URL}/doctors/${id}`, {
-      method: 'PUT',
-      headers: getHeaders(true),
-      body: JSON.stringify(payload)
-    }),
-
-  deleteDoctor: (id) =>
-    request(`${BASE_URL}/doctors/${id}`, {
-      method: 'DELETE',
-      headers: getHeaders(true)
-    }),
-
-  // --- SPECIALTIES ---
-  getSpecialties: (includeInactive = false) =>
-    request(`${BASE_URL}/specialties?include_inactive=${includeInactive}`, {
       method: 'GET',
       headers: getHeaders(false)
     }),
 
-  createSpecialty: (payload) =>
-    request(`${BASE_URL}/specialties`, {
-      method: 'POST',
-      headers: getHeaders(true),
-      body: JSON.stringify(payload)
-    }),
-
-  updateSpecialty: (id, payload) =>
-    request(`${BASE_URL}/specialties/${id}`, {
-      method: 'PUT',
-      headers: getHeaders(true),
-      body: JSON.stringify(payload)
-    }),
-
-  deleteSpecialty: (id) =>
-    request(`${BASE_URL}/specialties/${id}`, {
-      method: 'DELETE',
-      headers: getHeaders(true)
-    }),
-
-  // --- SCHEDULES ---
-  getDoctorSchedules: (doctorId, params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return request(`${BASE_URL}/doctors/${doctorId}/schedules?${query}`, {
+  // 4. View Doctor Detail (Patient/Public) - GET /api/doctors/:id
+  getDoctor: (id) =>
+    request(`${BASE_URL}/doctors/${id}`, {
       method: 'GET',
       headers: getHeaders(false)
-    });
-  },
-
-  createSchedule: (payload) =>
-    request(`${BASE_URL}/schedules`, {
-      method: 'POST',
-      headers: getHeaders(true),
-      body: JSON.stringify(payload)
     }),
 
-  updateSchedule: (id, payload) =>
-    request(`${BASE_URL}/schedules/${id}`, {
-      method: 'PUT',
-      headers: getHeaders(true),
-      body: JSON.stringify(payload)
-    }),
-
-  deleteSchedule: (id) =>
-    request(`${BASE_URL}/schedules/${id}`, {
-      method: 'DELETE',
-      headers: getHeaders(true)
-    }),
-
-  // --- APPOINTMENTS ---
-  getAppointments: (params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return request(`${BASE_URL}/appointments?${query}`, {
-      method: 'GET',
-      headers: getHeaders(true)
-    });
-  },
-
-  getAppointmentDetail: (id) =>
-    request(`${BASE_URL}/appointments/${id}`, {
-      method: 'GET',
-      headers: getHeaders(true)
-    }),
-
+  // 5. Book Appointment (Patient) - POST /api/appointments
   bookAppointment: (payload) =>
     request(`${BASE_URL}/appointments`, {
       method: 'POST',
@@ -189,16 +97,53 @@ export const api = {
       body: JSON.stringify(payload)
     }),
 
+  // 6. View My Appointments (Patient) - GET /api/my-appointments
+  getMyAppointments: () =>
+    request(`${BASE_URL}/my-appointments`, {
+      method: 'GET',
+      headers: getHeaders(true)
+    }),
+
+  // 7. Cancel Appointment (Patient) - DELETE /api/appointments/:id
+  cancelAppointment: (id) =>
+    request(`${BASE_URL}/appointments/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(true)
+    }),
+
+  // 8. View Appointments (Doctor) - GET /api/doctor/appointments
+  getDoctorAppointments: () =>
+    request(`${BASE_URL}/doctor/appointments`, {
+      method: 'GET',
+      headers: getHeaders(true)
+    }),
+
+  // 9. Update Appointment Status (Doctor) - PUT /api/doctor/appointments/:id
   updateAppointmentStatus: (id, status) =>
-    request(`${BASE_URL}/appointments/${id}/status`, {
+    request(`${BASE_URL}/doctor/appointments/${id}`, {
       method: 'PUT',
       headers: getHeaders(true),
       body: JSON.stringify({ status })
     }),
 
-  cancelAppointment: (id) =>
-    request(`${BASE_URL}/appointments/${id}`, {
+  // 10. Manage Doctors (Admin) - POST /api/admin/doctors, DELETE /api/admin/doctors/:id
+  createDoctor: (payload) =>
+    request(`${BASE_URL}/admin/doctors`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: JSON.stringify(payload)
+    }),
+
+  deleteDoctor: (id) =>
+    request(`${BASE_URL}/admin/doctors/${id}`, {
       method: 'DELETE',
       headers: getHeaders(true)
+    }),
+
+  // Helper: Specialties
+  getSpecialties: () =>
+    request(`${BASE_URL}/specialties`, {
+      method: 'GET',
+      headers: getHeaders(false)
     })
 };

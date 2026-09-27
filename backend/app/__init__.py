@@ -1,61 +1,83 @@
 import os
 from flask import Flask, jsonify
 from flask_cors import CORS
-from .models import db
-from .routes import auth_bp, doctor_bp, specialty_bp, schedule_bp, appointment_bp
-from .services.seed_service import SeedService
-try:
-    from config import Config
-except ImportError:
-    from ..config import Config
+from dotenv import load_dotenv
+from .database import close_db, init_db, seed_db, get_db_path
+from .routes import api_bp
 
-def create_app(config_class=Config):
+load_dotenv()
+
+def create_app(test_config=None):
     app = Flask(__name__)
-    app.config.from_object(config_class)
 
-    # Khởi tạo CORS cho phép React frontend kết nối
+    # Default configuration
+    app.config.from_mapping(
+        SECRET_KEY=os.environ.get('SECRET_KEY', 'default-dev-secret-key-32768'),
+        JWT_SECRET_KEY=os.environ.get('JWT_SECRET_KEY', 'default-jwt-secret-key-clinic'),
+        DATABASE_URL=os.environ.get('DATABASE_URL', 'clinic.db'),
+    )
+
+    if test_config:
+        app.config.update(test_config)
+
+    # Enable CORS for React frontend (Vite :5173 and others)
     CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
-    # Khởi tạo Database
-    db.init_app(app)
+    # Register Blueprint with prefix /api
+    app.register_blueprint(api_bp, url_prefix='/api')
 
-    # Đăng ký Blueprints theo đúng API Contract trong tài liệu
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(doctor_bp, url_prefix='/api/doctors')
-    app.register_blueprint(specialty_bp, url_prefix='/api/specialties')
-    app.register_blueprint(schedule_bp, url_prefix='/api')
-    app.register_blueprint(appointment_bp, url_prefix='/api/appointments')
+    # Close DB connection at teardown
+    app.teardown_appcontext(close_db)
 
-    # Endpoint kiểm tra sức khỏe hệ thống
-    @app.route('/api/health', methods=['GET'])
-    def health_check():
-        return jsonify({'status': 'ok', 'service': 'Clinic Appointment Booking System'}), 200
-
-    # Global error handlers trả về JSON thống nhất
+    # Standard JSON error handlers
     @app.errorhandler(400)
-    def bad_request(e):
-        msg = getattr(e, 'description', 'Yêu cầu không hợp lệ')
-        return jsonify({'success': False, 'message': str(msg)}), 400
+    def handle_bad_request(e):
+        return jsonify({
+            "error": {
+                "code": "bad_request",
+                "message": getattr(e, 'description', 'Bad request.'),
+                "details": {}
+            }
+        }), 400
 
     @app.errorhandler(404)
-    def not_found(e):
-        msg = getattr(e, 'description', 'Không tìm thấy tài nguyên')
-        return jsonify({'success': False, 'message': str(msg)}), 404
+    def handle_not_found(e):
+        return jsonify({
+            "error": {
+                "code": "not_found",
+                "message": getattr(e, 'description', 'Resource not found.'),
+                "details": {}
+            }
+        }), 404
 
     @app.errorhandler(405)
-    def method_not_allowed(e):
-        return jsonify({'success': False, 'message': 'Phương thức HTTP không được hỗ trợ'}), 405
+    def handle_method_not_allowed(e):
+        return jsonify({
+            "error": {
+                "code": "method_not_allowed",
+                "message": "HTTP method not allowed for this endpoint.",
+                "details": {}
+            }
+        }), 405
 
     @app.errorhandler(500)
-    def internal_server_error(e):
-        return jsonify({'success': False, 'message': 'Lỗi nội bộ hệ thống máy chủ'}), 500
+    def handle_internal_server_error(e):
+        return jsonify({
+            "error": {
+                "code": "internal_server_error",
+                "message": "An internal server error occurred.",
+                "details": {}
+            }
+        }), 500
 
-    # Khởi tạo bảng và seed data ban đầu
+    # Auto-initialize DB if not yet created
     with app.app_context():
-        try:
-            db.create_all()
-            SeedService.seed_data()
-        except Exception as e:
-            print(f"[create_app] Warning initializing DB: {e}")
+        db_path = get_db_path()
+        if not os.path.exists(db_path):
+            try:
+                init_db(db_path)
+                seed_db(db_path)
+            except Exception as ex:
+                print(f"[create_app] Database initialization notice: {ex}")
 
     return app

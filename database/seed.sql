@@ -1,83 +1,40 @@
--- CLINIC APPOINTMENT BOOKING SYSTEM
--- Seed Data for MySQL (Dữ liệu mẫu khởi tạo)
+-- Clinic Appointment System - Seed Data
+-- 1. Chuyên khoa (Specialties) - Đầy đủ 6 chuyên khoa
+INSERT INTO specialties (id, name, description) VALUES
+(1, 'Nội khoa', 'Khám và điều trị các bệnh lý nội khoa tổng quát, tim mạch, tiêu hóa, hô hấp và bệnh mãn tính.'),
+(2, 'Nhi khoa', 'Chăm sóc sức khỏe toàn diện, khám và tiêm chủng cho trẻ sơ sinh, trẻ nhỏ và trẻ vị thành niên.'),
+(3, 'Da liễu', 'Khám, chẩn đoán và điều trị bệnh lý về da, tóc, móng và chăm sóc thẩm mỹ da chuyên sâu.'),
+(4, 'Tim mạch', 'Chẩn đoán và điều trị các bệnh tim mạch chuyên sâu, tăng huyết áp, suy tim, mạch vành.'),
+(5, 'Tai Mũi Họng', 'Nội soi chẩn đoán và điều trị các bệnh lý tai mũi họng cho người lớn và trẻ nhỏ.'),
+(6, 'Mắt', 'Đo khúc xạ, khám và điều trị tật khúc xạ, viêm nhiễm và các bệnh lý về mắt.');
 
--- 1. Thêm Chuyên Khoa (Specialties)
-INSERT INTO specialties (id, name, description, active) VALUES
-(1, 'Nội khoa', 'Khám tổng quát, bệnh mãn tính, tầm soát sức khỏe định kỳ', 1),
-(2, 'Nhi khoa', 'Chăm sóc sức khỏe toàn diện cho trẻ sơ sinh, trẻ nhỏ và thanh thiếu niên', 1),
-(3, 'Da liễu', 'Chẩn đoán và điều trị các vấn đề về da, tóc, móng và thẩm mỹ da nội khoa', 1),
-(4, 'Tim mạch', 'Khám và điều trị các bệnh lý tim mạch, huyết áp và mạch máu', 1),
-(5, 'Tai Mũi Họng', 'Chẩn đoán và điều trị các bệnh lý tai, mũi và họng người lớn & trẻ em', 1),
-(6, 'Mắt', 'Khám, đo thị lực, kiểm soát khúc xạ và điều trị các bệnh về mắt', 1)
-ON DUPLICATE KEY UPDATE name=VALUES(name);
-
--- 2. Thêm Tài khoản mẫu (Users)
+-- 2. Tài khoản người dùng (Users)
 -- Mật khẩu mặc định:
 -- Admin: Admin@123
 -- Doctor: Doctor@123
 -- Patient: Patient@123
--- (Các hash mật khẩu mẫu được tạo tương thích với Werkzeug scrypt)
-INSERT INTO users (id, name, email, password_hash, role, created_at, updated_at) VALUES
-(1, 'Hệ Thống Quản Trị Viên', 'admin@clinic.com', 'scrypt:32768:8:1$uH3P6Y7uC3vGgqL0$d3ef27c4ffc9779df5c9cfbc6964ef79caae86c478a05c742910793b8e734ca85ad29f6d7ab7d77a06fae9c4021bbfe7fbc6b08702ee6e999c0d4a36f6d5ef66', 'ADMIN', NOW(), NOW()),
-(2, 'BS. CKII Nguyễn Văn An', 'doctor.an@clinic.com', 'scrypt:32768:8:1$nN5r2X4Y8mK1lPo9$b186b1f28b7e28325a95610ec3f3e1b04593ceeeacb45be21c7d24268e6f1f4ba407338568eaec60d00f6c243eb2dca79116e0339caec1a8a2bc4a54c86cb321', 'DOCTOR', NOW(), NOW()),
-(3, 'ThS.BS Đặng Thị Mai', 'doctor.mai@clinic.com', 'scrypt:32768:8:1$nN5r2X4Y8mK1lPo9$b186b1f28b7e28325a95610ec3f3e1b04593ceeeacb45be21c7d24268e6f1f4ba407338568eaec60d00f6c243eb2dca79116e0339caec1a8a2bc4a54c86cb321', 'DOCTOR', NOW(), NOW()),
-(4, 'ThS.BS Lê Minh Cường', 'doctor.cuong@clinic.com', 'scrypt:32768:8:1$nN5r2X4Y8mK1lPo9$b186b1f28b7e28325a95610ec3f3e1b04593ceeeacb45be21c7d24268e6f1f4ba407338568eaec60d00f6c243eb2dca79116e0339caec1a8a2bc4a54c86cb321', 'DOCTOR', NOW(), NOW()),
-(5, 'PGS.TS Phạm Thu Hà', 'doctor.ha@clinic.com', 'scrypt:32768:8:1$nN5r2X4Y8mK1lPo9$b186b1f28b7e28325a95610ec3f3e1b04593ceeeacb45be21c7d24268e6f1f4ba407338568eaec60d00f6c243eb2dca79116e0339caec1a8a2bc4a54c86cb321', 'DOCTOR', NOW(), NOW()),
-(6, 'BS. CKI Hoàng Văn Đức', 'doctor.duc@clinic.com', 'scrypt:32768:8:1$nN5r2X4Y8mK1lPo9$b186b1f28b7e28325a95610ec3f3e1b04593ceeeacb45be21c7d24268e6f1f4ba407338568eaec60d00f6c243eb2dca79116e0339caec1a8a2bc4a54c86cb321', 'DOCTOR', NOW(), NOW()),
-(7, 'BS. CKI Vũ Thị Lan', 'doctor.lan@clinic.com', 'scrypt:32768:8:1$nN5r2X4Y8mK1lPo9$b186b1f28b7e28325a95610ec3f3e1b04593ceeeacb45be21c7d24268e6f1f4ba407338568eaec60d00f6c243eb2dca79116e0339caec1a8a2bc4a54c86cb321', 'DOCTOR', NOW(), NOW()),
-(8, 'Nguyễn Văn Hùng', 'patient.hung@gmail.com', 'scrypt:32768:8:1$pT9w4V6B2sQ8zMn3$e79e604f4a3fb3ce51872dfca7a1c7c9ecdaae4508ef8396c429c9fe7fa17bcf217983652dbd47cf57424ad4ba9e5264b184ef3d21396a5f573d82a17cb27993', 'PATIENT', NOW(), NOW()),
-(9, 'Trần Thị Mai', 'patient.lan@gmail.com', 'scrypt:32768:8:1$pT9w4V6B2sQ8zMn3$e79e604f4a3fb3ce51872dfca7a1c7c9ecdaae4508ef8396c429c9fe7fa17bcf217983652dbd47cf57424ad4ba9e5264b184ef3d21396a5f573d82a17cb27993', 'PATIENT', NOW(), NOW())
-ON DUPLICATE KEY UPDATE email=VALUES(email);
+INSERT INTO users (id, full_name, email, password_hash, role) VALUES
+(1, 'Quản Trị Viên Hệ Thống', 'admin@clinic.com', 'scrypt:32768:8:1$rhqvpBR6MSmi9Qnk$e7bab0e4a43a5c96d7aade309ca8441b8dee5fac3254032b85053c7bc9040d24da4b09330c3629ef86fe8708386decf0c28964c5b9074a209296b061e636f383', 'ADMIN'),
+(2, 'BS. CKII Nguyễn Văn An', 'doctor.an@clinic.com', 'scrypt:32768:8:1$O9mGmNRDAm5h38JR$15040a08309d245d63e1fdeb238b665501929351d742e11e21bebdc58289e90bc51c6a9006b768dffd3e41930eca712ec936d2d5ad223af0edd4e3ff4418c677', 'DOCTOR'),
+(3, 'ThS.BS Đặng Thị Mai', 'doctor.mai@clinic.com', 'scrypt:32768:8:1$O9mGmNRDAm5h38JR$15040a08309d245d63e1fdeb238b665501929351d742e11e21bebdc58289e90bc51c6a9006b768dffd3e41930eca712ec936d2d5ad223af0edd4e3ff4418c677', 'DOCTOR'),
+(4, 'ThS.BS Lê Minh Cường', 'doctor.cuong@clinic.com', 'scrypt:32768:8:1$O9mGmNRDAm5h38JR$15040a08309d245d63e1fdeb238b665501929351d742e11e21bebdc58289e90bc51c6a9006b768dffd3e41930eca712ec936d2d5ad223af0edd4e3ff4418c677', 'DOCTOR'),
+(5, 'PGS.TS Phạm Thu Hà', 'doctor.ha@clinic.com', 'scrypt:32768:8:1$O9mGmNRDAm5h38JR$15040a08309d245d63e1fdeb238b665501929351d742e11e21bebdc58289e90bc51c6a9006b768dffd3e41930eca712ec936d2d5ad223af0edd4e3ff4418c677', 'DOCTOR'),
+(6, 'BS. CKI Hoàng Văn Đức', 'doctor.duc@clinic.com', 'scrypt:32768:8:1$O9mGmNRDAm5h38JR$15040a08309d245d63e1fdeb238b665501929351d742e11e21bebdc58289e90bc51c6a9006b768dffd3e41930eca712ec936d2d5ad223af0edd4e3ff4418c677', 'DOCTOR'),
+(7, 'BS. CKI Vũ Thị Lan', 'doctor.lan@clinic.com', 'scrypt:32768:8:1$O9mGmNRDAm5h38JR$15040a08309d245d63e1fdeb238b665501929351d742e11e21bebdc58289e90bc51c6a9006b768dffd3e41930eca712ec936d2d5ad223af0edd4e3ff4418c677', 'DOCTOR'),
+(8, 'Nguyễn Văn Hùng', 'patient.hung@gmail.com', 'scrypt:32768:8:1$0DCdd5v8TXysAGGu$d2f90179d6f4517d3f57e917219d6308e3a583ca42a57ae691e060af6e885a0363731911697f0d06bc3d71e57f78255220f1c8286921ce323a2c10351eab833d', 'PATIENT'),
+(9, 'Trần Thị Lan', 'patient.lan@gmail.com', 'scrypt:32768:8:1$0DCdd5v8TXysAGGu$d2f90179d6f4517d3f57e917219d6308e3a583ca42a57ae691e060af6e885a0363731911697f0d06bc3d71e57f78255220f1c8286921ce323a2c10351eab833d', 'PATIENT');
 
--- 3. Thêm Hồ sơ Bác sĩ (Doctors)
-INSERT INTO doctors (id, user_id, specialty_id, phone, description, experience_years, active) VALUES
-(1, 2, 1, '0901234567', 'Chuyên gia hàng đầu về Nội khoa với hơn 12 năm kinh nghiệm chẩn đoán và điều trị các bệnh mãn tính.', 12, 1),
-(2, 3, 2, '0907654321', 'Thạc sĩ chuyên ngành Nhi khoa, tận tâm, giàu kinh nghiệm chăm sóc và thăm khám cho các bệnh nhi.', 7, 1),
-(3, 4, 3, '0912345678', 'Bác sĩ chuyên khoa Da liễu, chuyên sâu về điều trị mụn, sắc tố và phục hồi da liễu thẩm mỹ.', 10, 1),
-(4, 5, 4, '0934567890', 'Chuyên gia Tim mạch hàng đầu với hơn 15 năm kinh nghiệm điều trị tăng huyết áp, bệnh mạch vành và rối loạn nhịp tim.', 15, 1),
-(5, 6, 5, '0945678901', 'Bác sĩ chuyên khoa Tai Mũi Họng với 9 năm kinh nghiệm nội soi chẩn đoán và điều trị viêm xoang, viêm amidan, viêm họng mãn tính.', 9, 1),
-(6, 7, 6, '0956789012', 'Chuyên gia Nhãn khoa với 11 năm kinh nghiệm khám đo khúc xạ mắt, điều trị các bệnh lý giác mạc và tật khúc xạ trẻ em.', 11, 1)
-ON DUPLICATE KEY UPDATE phone=VALUES(phone);
+-- 3. Hồ sơ Bác sĩ (Doctors) - Mỗi chuyên khoa 1 bác sĩ
+INSERT INTO doctors (id, user_id, specialty_id, phone, experience, description, available) VALUES
+(1, 2, 1, '0901234567', 12, 'Chuyên gia đầu ngành về điều trị các bệnh mãn tính, tầm soát sức khỏe toàn diện và tư vấn phác đồ điều trị cá nhân hóa.', 1),
+(2, 3, 2, '0907654321', 7, 'Tận tâm, thấu hiểu tâm lý trẻ nhỏ, chuyên sâu về chăm sóc sơ sinh, dinh dưỡng và đồng hành cùng sự phát triển của bé.', 1),
+(3, 4, 3, '0912345678', 10, 'Chuyên sâu điều trị mụn trứng cá chuẩn y khoa, phục hồi màng bảo vệ da và ứng dụng công nghệ thẩm mỹ da hiện đại.', 1),
+(4, 5, 4, '0934567890', 15, 'Chuyên gia Tim mạch đầu ngành về tầm soát cao huyết áp, bệnh mạch vành, suy tim và can thiệp điều trị tiên tiến.', 1),
+(5, 6, 5, '0945678901', 9, 'Nội soi kỹ thuật cao không đau, điều trị dứt điểm viêm xoang, viêm họng mãn tính, viêm amidan và các bệnh lý thanh quản.', 1),
+(6, 7, 6, '0956789012', 11, 'Khám đo khúc xạ chuyên sâu, kiểm soát cận thị học đường, điều trị nhược thị và các bệnh lý giác mạc bảo vệ thị lực.', 1);
 
--- 4. Thêm Hồ sơ Bệnh nhân (Patients)
-INSERT INTO patients (id, user_id, phone, date_of_birth, gender, address) VALUES
-(1, 5, '0336578262', '1990-05-15', 'Nam', 'Số 12 ngõ 45 phố Hai Bà Trưng, Hà Nội'),
-(2, 6, '0988776655', '1995-10-20', 'Nữ', 'Tòa Sapphire, KĐT Vinhomes Smart City, Nam Từ Liêm, Hà Nội')
-ON DUPLICATE KEY UPDATE phone=VALUES(phone);
-
--- 5. Thêm Lịch Làm Việc (Doctor Schedules)
--- Tạo lịch mẫu cho các ngày tới
-INSERT INTO doctor_schedules (id, doctor_id, date, start_time, end_time, is_available) VALUES
-(1, 1, '2026-09-20', '08:00', '08:30', 1),
-(2, 1, '2026-09-20', '08:30', '09:00', 1),
-(3, 1, '2026-09-20', '09:00', '09:30', 1),
-(4, 1, '2026-09-20', '09:30', '10:00', 1),
-(5, 1, '2026-09-20', '10:00', '10:30', 1),
-(6, 1, '2026-09-20', '14:00', '14:30', 1),
-(7, 1, '2026-09-20', '14:30', '15:00', 1),
-(8, 2, '2026-09-20', '08:30', '09:00', 1),
-(9, 2, '2026-09-20', '09:00', '09:30', 1),
-(10, 2, '2026-09-20', '09:30', '10:00', 1),
-(11, 2, '2026-09-20', '10:00', '10:30', 1),
-(12, 3, '2026-09-21', '09:00', '09:30', 1),
-(13, 3, '2026-09-21', '09:30', '10:00', 1),
-(14, 3, '2026-09-21', '10:00', '10:30', 1),
-(15, 4, '2026-09-21', '08:30', '09:00', 1),
-(16, 4, '2026-09-21', '09:00', '09:30', 1),
-(17, 4, '2026-09-21', '09:30', '10:00', 1),
-(18, 5, '2026-09-21', '08:30', '09:00', 1),
-(19, 5, '2026-09-21', '09:00', '09:30', 1),
-(20, 5, '2026-09-21', '09:30', '10:00', 1),
-(21, 6, '2026-09-21', '08:30', '09:00', 1),
-(22, 6, '2026-09-21', '09:00', '09:30', 1),
-(23, 6, '2026-09-21', '09:30', '10:00', 1)
-ON DUPLICATE KEY UPDATE date=VALUES(date);
-
--- 6. Thêm Lịch Hẹn Khám Mẫu (Appointments)
-INSERT INTO appointments (id, patient_id, doctor_id, schedule_id, appointment_date, start_time, reason, status, created_at, updated_at) VALUES
-(1, 1, 1, 1, '2026-09-20', '08:00', 'Khám định kỳ tổng quát, đau dạ dày nhẹ kéo dài', 'CONFIRMED', NOW(), NOW()),
-(2, 2, 2, 8, '2026-09-20', '08:30', 'Bé bị ho sốt 2 ngày nay, cần tư vấn điều trị', 'PENDING', NOW(), NOW())
-ON DUPLICATE KEY UPDATE status=VALUES(status);
-
--- Đánh dấu slot đã được đặt là không khả dụng
-UPDATE doctor_schedules SET is_available = 0 WHERE id IN (1, 8);
+-- 4. Lịch hẹn khám (Appointments)
+INSERT INTO appointments (id, patient_id, doctor_id, date, time, reason, status) VALUES
+(1, 8, 1, '2026-10-01', '09:00', 'Khám sức khỏe tổng quát và đau dạ dày nhẹ', 'CONFIRMED'),
+(2, 9, 2, '2026-10-02', '10:00', 'Tư vấn tiêm chủng và theo dõi thể trạng cho bé', 'PENDING'),
+(3, 8, 4, '2026-10-05', '14:30', 'Tầm soát huyết áp và đo điện tim định kỳ', 'PENDING');

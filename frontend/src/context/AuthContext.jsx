@@ -4,76 +4,39 @@ import { api } from '../services/api';
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const initAuth = async () => {
-      const storedToken = localStorage.getItem('token');
-      if (storedToken) {
-        try {
-          const res = await api.getMe();
-          if (res.success && res.user) {
-            setUser(res.user);
-          } else {
-            logout();
-          }
-        } catch (err) {
-          console.warn('Session expired or invalid:', err.message);
-          logout();
-        }
-      }
-      setLoading(false);
-    };
-
-    initAuth();
-
-    const handleUnauthorized = () => {
-      logout();
-    };
-
-    window.addEventListener('auth:unauthorized', handleUnauthorized);
-    return () => {
-      window.removeEventListener('auth:unauthorized', handleUnauthorized);
-    };
-  }, []);
+  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(false);
 
   const login = async (email, password) => {
     const res = await api.login({ email, password });
-    if (res.success && res.token) {
+    if (res.token && res.user) {
       localStorage.setItem('token', res.token);
+      localStorage.setItem('user', JSON.stringify(res.user));
       setToken(res.token);
       setUser(res.user);
       return res.user;
     }
-    throw new Error(res.message || 'Đăng nhập thất bại');
+    throw new Error('Dữ liệu trả về không hợp lệ');
   };
 
   const register = async (userData) => {
     const res = await api.register(userData);
-    if (res.success && res.token) {
-      localStorage.setItem('token', res.token);
-      setToken(res.token);
-      setUser(res.user);
-      return res.user;
-    }
-    throw new Error(res.message || 'Đăng ký thất bại');
+    return res;
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
-  };
-
-  const updateProfile = async (data) => {
-    const res = await api.updateProfile(data);
-    if (res.success && res.user) {
-      setUser((prev) => ({ ...prev, ...res.user }));
-      return res.user;
-    }
-    throw new Error(res.message || 'Cập nhật thông tin thất bại');
   };
 
   return (
@@ -86,8 +49,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
-        logout,
-        updateProfile
+        logout
       }}
     >
       {children}

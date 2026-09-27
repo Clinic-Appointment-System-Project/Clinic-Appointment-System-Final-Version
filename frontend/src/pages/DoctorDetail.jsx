@@ -1,162 +1,151 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { DoctorAvatar } from '../components/DoctorAvatar';
+import Loading from '../components/Loading';
+import { getDoctorImage } from '../utils/doctorImages';
 
-export const DoctorDetail = () => {
+const DoctorDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [doctor, setDoctor] = useState(null);
-  const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchDetail = async () => {
-      setLoading(true);
-      try {
-        const [docRes, schedRes] = await Promise.all([
-          api.getDoctorDetail(id),
-          api.getDoctorSchedules(id, { available_only: true })
-        ]);
-
-        if (docRes.success) setDoctor(docRes.doctor);
-        if (schedRes.success) setSchedules(schedRes.schedules);
-      } catch (err) {
-        setError(err.message || 'Không thể tải thông tin bác sĩ');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDetail();
+    loadDoctor();
   }, [id]);
 
-  if (loading) {
-    return (
-      <main style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <p>Đang tải thông tin chi tiết bác sĩ...</p>
-      </main>
-    );
-  }
-
-  if (error || !doctor) {
-    return (
-      <main style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <h3>{error || 'Không tìm thấy bác sĩ yêu cầu'}</h3>
-        <Link to="/doctors" className="btn btn-outline" style={{ marginTop: '16px' }}>
-          ← Quay lại danh sách bác sĩ
-        </Link>
-      </main>
-    );
-  }
+  const loadDoctor = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await api.getDoctor(id);
+      setDoctor(data);
+    } catch (err) {
+      if (err.status === 404 || err.code === 'not_found') {
+        setError('Không tìm thấy thông tin bác sĩ yêu cầu (Mã lỗi 404).');
+      } else {
+        setError(err.message || 'Không thể tải thông tin chi tiết bác sĩ.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <main>
-      <section className="section" style={{ paddingTop: '36px' }}>
-        <div className="wrap" style={{ maxWidth: '900px' }}>
-          <Link to="/doctors" className="back-link">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            Trở lại danh sách bác sĩ
-          </Link>
+    <div className="page-container">
+      <div className="back-link">
+        <Link to="/doctors">← Quay lại danh sách bác sĩ</Link>
+      </div>
 
-          {/* Hero Profile Card */}
-          <div className="doctor-profile-hero" style={{ marginTop: '16px' }}>
-            <DoctorAvatar src={doctor.avatar_url} name={doctor.name} size={84} />
+      {loading && <Loading message="Đang tải thông tin chi tiết bác sĩ..." />}
 
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <h1 style={{ margin: 0, fontSize: '24px' }}>{doctor.name}</h1>
-                <span className="spec-badge">{doctor.specialty_name}</span>
+      {error && !loading && (
+        <div className="alert alert-danger">
+          <p>{error}</p>
+          <button className="btn btn-outline btn-sm" onClick={() => navigate('/doctors')} style={{ marginTop: '0.5rem' }}>
+            Xem danh sách bác sĩ khác
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && doctor && (
+        <div className="doctor-profile-layout">
+          {/* Header Profile Card */}
+          <div className="card doctor-profile-header-card">
+            <div className="doctor-profile-top">
+              {getDoctorImage(doctor.id) ? (
+                <img
+                  src={getDoctorImage(doctor.id)}
+                  alt={doctor.full_name}
+                  className="doctor-profile-real-avatar"
+                />
+              ) : (
+                <div className="avatar-circle large doctor-profile-avatar">
+                  {doctor.full_name ? doctor.full_name.charAt(0).toUpperCase() : 'B'}
+                </div>
+              )}
+              <div className="doctor-profile-main-info">
+                <div className="doctor-detail-title-row">
+                  <h1 className="doctor-profile-name">{doctor.full_name}</h1>
+                  <span className="badge badge-specialty doctor-profile-badge">
+                    {doctor.specialty_name}
+                  </span>
+                </div>
+                <div className="doctor-profile-contacts">
+                  <span className="contact-chip">📧 {doctor.email}</span>
+                  {doctor.phone && <span className="contact-chip">📞 {doctor.phone}</span>}
+                  <span className="contact-chip status-chip-online">
+                    <span className="live-status-dot"></span>
+                    {doctor.available ? 'Đang nhận lịch khám' : 'Tạm ngưng nhận lịch'}
+                  </span>
+                </div>
               </div>
+              <div className="doctor-profile-header-cta">
+                <Link to={`/book/${doctor.id}`} className="btn btn-primary btn-lg shadow-btn">
+                  📅 Đặt lịch khám với bác sĩ này
+                </Link>
+              </div>
+            </div>
+          </div>
 
-              <div style={{ marginTop: '10px', fontSize: '14px', color: 'var(--muted)', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                <span>
-                  <strong>Kinh nghiệm:</strong> {doctor.experience_years} năm
-                </span>
-                {doctor.phone && (
-                  <span>
-                    <strong>Điện thoại:</strong> {doctor.phone}
-                  </span>
-                )}
-                {doctor.email && (
-                  <span>
-                    <strong>Email:</strong> {doctor.email}
-                  </span>
-                )}
+          {/* Main Info Cards */}
+          <div className="doctor-profile-main-content">
+            {/* Box 1: Thông số chuyên môn */}
+            <div className="card doctor-info-card">
+              <h3 className="info-card-title">🩺 Thông tin chuyên môn</h3>
+              <div className="doctor-meta-list">
+                <div className="meta-list-row">
+                  <span className="meta-row-label">Chuyên khoa:</span>
+                  <span className="meta-row-val highlight-val">{doctor.specialty_name}</span>
+                </div>
+                <div className="meta-list-row">
+                  <span className="meta-row-label">Kinh nghiệm công tác:</span>
+                  <span className="meta-row-val">{doctor.experience || 0} năm</span>
+                </div>
+                <div className="meta-list-row">
+                  <span className="meta-row-label">Điện thoại liên hệ:</span>
+                  <span className="meta-row-val">{doctor.phone || 'Chưa cập nhật'}</span>
+                </div>
+                <div className="meta-list-row">
+                  <span className="meta-row-label">Giờ tiếp nhận khám:</span>
+                  <span className="meta-row-val">Thứ 2 – Thứ 7 (08:00 – 17:00)</span>
+                </div>
+                <div className="meta-list-row">
+                  <span className="meta-row-label">Đơn vị công tác:</span>
+                  <span className="meta-row-val">Group 9 - Phòng khám đa khoa</span>
+                </div>
               </div>
             </div>
 
-            <div>
-              <Link
-                to={`/patient/appointments/book?doctor_id=${doctor.id}`}
-                className="btn btn-primary"
-              >
-                Đặt lịch hẹn ngay
+            {/* Box 2: Giới thiệu chuyên môn */}
+            <div className="card doctor-info-card">
+              <h3 className="info-card-title">👨‍⚕️ Giới thiệu chuyên môn</h3>
+              <p className="doctor-bio-text">
+                {doctor.description || 'Bác sĩ chuyên khoa giàu kinh nghiệm và tận tâm với sức khỏe người bệnh.'}
+              </p>
+            </div>
+
+            {/* Box 3: Về chuyên khoa */}
+            {doctor.specialty_description && (
+              <div className="card doctor-info-card">
+                <h3 className="info-card-title">🏥 Về chuyên khoa {doctor.specialty_name}</h3>
+                <p className="doctor-bio-text">{doctor.specialty_description}</p>
+              </div>
+            )}
+
+            {/* Bottom Booking Button */}
+            <div className="doctor-detail-bottom-cta">
+              <Link to={`/book/${doctor.id}`} className="btn btn-primary btn-lg shadow-btn">
+                📅 Đặt lịch khám với bác sĩ này
               </Link>
             </div>
           </div>
-
-          {/* Details Content */}
-          <div className="doctor-detail-grid">
-            <div className="dept-section">
-              <h2>Giới thiệu & Chuyên môn</h2>
-              <p style={{ lineHeight: 1.7, color: 'var(--ink)' }}>
-                {doctor.description || 'Chưa có thông tin giới thiệu chi tiết.'}
-              </p>
-            </div>
-
-            {/* Schedules Section */}
-            <div className="dept-section">
-              <h2>Khung giờ khám khả dụng</h2>
-              <p style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '16px' }}>
-                Chọn một khung giờ trống bên dưới để tiến hành đặt lịch khám nhanh:
-              </p>
-
-              {schedules.length === 0 ? (
-                <div style={{ padding: '24px', background: '#F8FAFC', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                  <p style={{ margin: 0, color: 'var(--muted)' }}>
-                    Hiện tại bác sĩ chưa có khung giờ khám khả dụng sắp tới. Vui lòng quay lại sau hoặc liên hệ hotline phòng khám.
-                  </p>
-                </div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
-                  {schedules.map((sch) => (
-                    <div
-                      key={sch.id}
-                      style={{
-                        padding: '14px',
-                        border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--bg-card)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px'
-                      }}
-                    >
-                      <div style={{ fontWeight: '600', color: 'var(--ink)' }}>
-                        📅 Ngày: {sch.date}
-                      </div>
-                      <div style={{ fontSize: '14px', color: 'var(--primary-dark)', fontWeight: '700' }}>
-                        ⏰ {sch.start_time} - {sch.end_time}
-                      </div>
-                      <Link
-                        to={`/patient/appointments/book?doctor_id=${doctor.id}&schedule_id=${sch.id}`}
-                        className="btn btn-primary btn-sm"
-                        style={{ marginTop: '6px', textAlign: 'center' }}
-                      >
-                        Chọn giờ này
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
         </div>
-      </section>
-    </main>
+      )}
+    </div>
   );
 };
+
+export default DoctorDetail;
