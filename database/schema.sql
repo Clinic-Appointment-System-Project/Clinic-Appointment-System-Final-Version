@@ -11,3 +11,9 @@ CREATE TABLE IF NOT EXISTS users (
     role TEXT NOT NULL CHECK(role IN ('PATIENT', 'DOCTOR', 'ADMIN')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- Specialties table
+CREATE TABLE IF NOT EXISTS specialties (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT
+);
