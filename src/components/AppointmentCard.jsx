@@ -1,31 +1,31 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link } from 'react-router-dom';
 import { getDoctorImage } from '../utils/doctorImages';
 
 const statusConfig = {
   PENDING: {
-    label: 'Chờ xác nhận',
+    label: 'Chá» xÃ¡c nháº­n',
     className: 'badge-pending',
-    icon: '⏳',
-    note: 'Lịch hẹn đang được nhân viên và bác sĩ tiếp nhận xử lý.'
+    icon: 'â³',
+    note: 'Lá»‹ch háº¹n Ä‘ang Ä‘Æ°á»£c nhÃ¢n viÃªn vÃ  bÃ¡c sÄ© tiáº¿p nháº­n xá»­ lÃ½.'
   },
   CONFIRMED: {
-    label: 'Đã xác nhận',
+    label: 'ÄÃ£ xÃ¡c nháº­n',
     className: 'badge-confirmed',
-    icon: '✅',
-    note: 'Lịch hẹn đã được bác sĩ xác nhận. Vui lòng đến trước giờ hẹn 10-15 phút.'
+    icon: 'âœ…',
+    note: 'Lá»‹ch háº¹n Ä‘Ã£ Ä‘Æ°á»£c bÃ¡c sÄ© xÃ¡c nháº­n. Vui lÃ²ng Ä‘áº¿n trÆ°á»›c giá» háº¹n 10-15 phÃºt.'
   },
   COMPLETED: {
-    label: 'Đã khám',
+    label: 'ÄÃ£ khÃ¡m',
     className: 'badge-completed',
-    icon: '🩺',
-    note: 'Buổi khám đã hoàn thành. Chúc bạn luôn mạnh khỏe và bình an!'
+    icon: 'ðŸ©º',
+    note: 'Buá»•i khÃ¡m Ä‘Ã£ hoÃ n thÃ nh. ChÃºc báº¡n luÃ´n máº¡nh khá»e vÃ  bÃ¬nh an!'
   },
   CANCELLED: {
-    label: 'Đã hủy',
+    label: 'ÄÃ£ há»§y',
     className: 'badge-cancelled',
-    icon: '✕',
-    note: 'Lịch hẹn này đã được hủy thành công.'
+    icon: 'âœ•',
+    note: 'Lá»‹ch háº¹n nÃ y Ä‘Ã£ Ä‘Æ°á»£c há»§y thÃ nh cÃ´ng.'
   }
 };
 
