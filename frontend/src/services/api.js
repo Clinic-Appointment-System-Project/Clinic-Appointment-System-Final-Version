@@ -33,7 +33,7 @@ const handleResponse = async (response) => {
 
   if (!response.ok) {
     const errorObj = data?.error || {};
-    const message = errorObj.message || data?.message || `Request failed with status${response.status}`;
+    const message = errorObj.message || data?.message || `Yêu cầu thất bại với mã lỗi ${response.status}`;
     const error = new Error(message);
     error.status = response.status;
     error.code = errorObj.code || 'error';
