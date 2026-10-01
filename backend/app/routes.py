@@ -5,6 +5,7 @@ from .validation import (
     validate_register,
     validate_login,
     validate_appointment,
+    validate_appointment_update,
     validate_status_update,
     validate_doctor_create
 )
@@ -164,6 +165,72 @@ def cancel_appointment(current_user, appointment_id):
     Appointment.delete(appointment_id)
     return "", 204
 
+@api_bp.patch('/appointments/<int:appointment_id>')
+@token_required
+@role_required('PATIENT')
+def edit_appointment(current_user, appointment_id):
+    appt = Appointment.find_by_id(appointment_id)
+    if not appt:
+        return error_response("not_found", "Appointment not found.", status_code=404)
+
+    if appt['patient_id'] != current_user['user_id']:
+        return error_response("forbidden", "You can only edit your own appointments.", status_code=403)
+
+    if appt['status'] != 'PENDING':
+        return error_response(
+            "validation_failed",
+            "Chỉ có thể sửa lịch hẹn đang ở trạng thái 'Chờ xác nhận' (PENDING).",
+            {"status": "Only PENDING appointments can be edited."},
+            status_code=422
+        )
+
+    data = request.get_json(silent=True)
+    if data is None:
+        return error_response("bad_request", "Malformed request body or invalid JSON.", status_code=400)
+
+    errors = validate_appointment_update(data)
+    if errors:
+        return error_response("validation_failed", "The request body is invalid.", errors, status_code=422)
+
+    new_doctor_id = int(data['doctor_id']) if 'doctor_id' in data else appt['doctor_id']
+    new_date = data.get('date', appt['date']).strip()
+    new_time = data.get('time', appt['time']).strip()
+    new_reason = data.get('reason', appt['reason'] or '').strip()
+
+    from datetime import datetime as dt, timezone, timedelta
+    VN_TZ = timezone(timedelta(hours=7))
+    try:
+        appt_dt = dt.strptime(f"{new_date} {new_time}", '%Y-%m-%d %H:%M').replace(tzinfo=VN_TZ)
+        if appt_dt <= dt.now(VN_TZ):
+            return error_response(
+                "validation_failed",
+                "Không thể đặt lịch hẹn vào thời điểm đã qua. Vui lòng chọn ngày và giờ trong tương lai.",
+                {"datetime": "Appointment datetime must be in the future."},
+                status_code=422
+            )
+    except ValueError:
+        pass
+
+    conflict_sql = """
+        SELECT id FROM appointments
+        WHERE doctor_id = ? AND date = ? AND time = ? AND status != 'CANCELLED' AND id != ?
+    """
+    from .database import query_db
+    if query_db(conflict_sql, (new_doctor_id, new_date, new_time, appointment_id), one=True):
+        return error_response(
+            "appointment_conflict",
+            "This doctor is already booked at this time.",
+            {},
+            status_code=409
+        )
+      
+    Appointment.update(appointment_id, new_doctor_id, new_date, new_time, new_reason)
+    updated_appt = Appointment.find_by_id(appointment_id)
+    return jsonify({
+        "message": "Appointment created successfully.",
+        "appointment": updated_appt
+      }), 200
+
 # 8. View Appointments (Doctor) - GET /api/doctor/appointments
 @api_bp.get('/doctor/appointments')
 @token_required
@@ -295,6 +362,20 @@ def delete_doctor(current_user, doctor_id):
 
     Doctor.delete(doctor_id)
     return "", 204
+
+@api_bp.get('/admin/patients')
+@token_required
+@role_required('ADMIN')
+def get_all_patients(current_user):
+    patients = User.get_all_patients()
+    return jsonify(patients), 200
+
+@api_bp.get('/admin/appointments')
+@token_required
+@role_required('ADMIN')
+def get_all_appointments(current_user):
+    appointments = Appointment.get_all()
+    return jsonify(appointments), 200
 
 # Helper: Get all specialties
 @api_bp.get('/specialties')
