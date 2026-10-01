@@ -7,7 +7,7 @@ load_dotenv()
 app = create_app()
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5005))
+    port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     print("==================================================")
     print(" Clinic Appointment System - Flask Server")
