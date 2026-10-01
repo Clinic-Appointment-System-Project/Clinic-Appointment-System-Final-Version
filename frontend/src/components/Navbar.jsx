@@ -23,19 +23,23 @@ const Navbar = () => {
         </Link>
 
         <nav className="navbar-menu">
-          <Link
-            to="/"
-            className={`nav-link ${isActive('/') ? 'active' : ''}`}
-          >
-            Trang chủ
-          </Link>
+          {(!isAuthenticated || user?.role !== 'ADMIN') && (
+            <Link
+              to="/"
+              className={`nav-link ${isActive('/') ? 'active' : ''}`}
+            >
+              Trang chủ
+            </Link>
+          )}
 
-          <Link
-            to="/doctors"
-            className={`nav-link ${isActive('/doctors') ? 'active' : ''}`}
-          >
-            Bác sĩ
-          </Link>
+          {(!isAuthenticated || user?.role !== 'ADMIN') && (
+            <Link
+              to="/doctors"
+              className={`nav-link ${isActive('/doctors') ? 'active' : ''}`}
+            >
+              Bác sĩ
+            </Link>
+          )}
 
           {isAuthenticated && user?.role === 'PATIENT' && (
             <Link

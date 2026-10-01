@@ -8,7 +8,7 @@ const getHeaders = (includeAuth = true) => {
     'Content-Type': 'application/json'
   };
   if (includeAuth) {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -33,7 +33,7 @@ const handleResponse = async (response) => {
 
   if (!response.ok) {
     const errorObj = data?.error || {};
-    const message = errorObj.message || data?.message || `Request failed with status ${response.status}`;
+    const message = errorObj.message || data?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại sau.';
     const error = new Error(message);
     error.status = response.status;
     error.code = errorObj.code || 'error';
@@ -50,7 +50,7 @@ const request = async (url, options = {}) => {
     return await handleResponse(res);
   } catch (err) {
     if (err.name === 'TypeError' && (err.message.includes('fetch') || err.message.includes('NetworkError'))) {
-      const netErr = new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra Flask server đang chạy.');
+      const netErr = new Error('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
       netErr.code = 'network_error';
       throw netErr;
     }
@@ -111,6 +111,13 @@ export const api = {
       headers: getHeaders(true)
     }),
 
+  updateAppointment: (id, payload) =>
+    request(`${BASE_URL}/appointments/${id}`, {
+      method: 'PATCH',
+      headers: getHeaders(true),
+      body: JSON.stringify(payload)
+    }),     
+
   // 8. View Appointments (Doctor) - GET /api/doctor/appointments
   getDoctorAppointments: () =>
     request(`${BASE_URL}/doctor/appointments`, {
@@ -137,6 +144,19 @@ export const api = {
   deleteDoctor: (id) =>
     request(`${BASE_URL}/admin/doctors/${id}`, {
       method: 'DELETE',
+      headers: getHeaders(true)
+    }),
+
+  // 11. Manage Patients and Appointments (Admin)
+  getAdminPatients: () =>
+    request(`${BASE_URL}/admin/patients`, {
+      method: 'GET',
+      headers: getHeaders(true)
+    }),
+
+  getAdminAppointments: () =>
+    request(`${BASE_URL}/admin/appointments`, {
+      method: 'GET',
       headers: getHeaders(true)
     }),
 
