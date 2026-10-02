@@ -37,7 +37,7 @@ const Navbar = () => {
       <div className="navbar-container">
         <Link to={getBrandLink()} className="navbar-brand">
           <img src="/images/logo.webp" alt="Logo Group 9" className="brand-logo-img" />
-          <span className="brand-text">Group 9 - Phòng khám đa khoa</span>
+          <span className="brand-text">GROUP 9 - PHÒNG KHÁM ĐA KHOA</span>
         </Link>
 
         <nav className="navbar-menu">
