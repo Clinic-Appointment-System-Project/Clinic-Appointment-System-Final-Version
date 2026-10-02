@@ -8,7 +8,7 @@ const getHeaders = (includeAuth = true) => {
     'Content-Type': 'application/json'
   };
   if (includeAuth) {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
