@@ -1,9 +1,3 @@
-# Test Suite: Appointments & Role-Based Actions (test_appointments.py)
-# Covers Function 5 (Book), 6 (My Appointments), 7 (Cancel),
-# Function 8 (Doctor Appointments), Function 9 (Update Status), Function 10 (Manage Doctors)
-
-# ----------------- FUNCTION 5: Book Appointment -----------------
-
 def test_book_appointment_success(client, patient_token):
     res = client.post('/api/appointments', json={
         'doctor_id': 1,

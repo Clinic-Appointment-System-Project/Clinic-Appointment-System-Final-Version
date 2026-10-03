@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Environment variables
 .env
 backend/.env
@@ -63,3 +64,70 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+=======
+# Environment variables
+.env
+backend/.env
+frontend/.env
+*.env
+*.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Database
+*.db
+*.sqlite3
+backend/*.db
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+>>>>>>> 4b90d3f9cd8b1580f54444b72e05043b706dbf86
