@@ -15,7 +15,7 @@ Hệ thống đã có sẵn 3 tài khoản đại diện cho 3 vai trò khác nh
 |---|---|---|---|
 | **Bệnh nhân**<br>*(Patient)* | `patient.hung@gmail.com` | `Patient@123` | • Xem danh sách & chi tiết bác sĩ theo chuyên khoa.<br>• Đặt lịch hẹn khám bệnh theo khung giờ.<br>• Xem, chỉnh sửa thông tin hoặc hủy lịch hẹn của mình. |
 | **Bác sĩ**<br>*(Doctor)* | `doctor.an@clinic.com` | `Doctor@123` | • Xem danh sách bệnh nhân đã đặt lịch với mình.<br>• Xác nhận lịch khám (`CONFIRMED`).<br>• Đánh dấu hoàn thành buổi khám (`COMPLETED`). |
-| **Quản trị viên**<br>*(Admin)* | `admin@clinic.com` | `Admin@123` | • Bảng điều khiển thống kê tổng quan phòng khám.<br>• Thêm mới bác sĩ kèm chuyên khoa hoặc xóa bác sĩ.<br>• Theo dõi toàn bộ lịch hẹn và danh sách bệnh nhân. |
+| **Quản trị viên**<br>*(Admin)* | `admin@clinic.com` | `Admin@12` | • Bảng điều khiển thống kê tổng quan phòng khám.<br>• Thêm mới bác sĩ kèm chuyên khoa hoặc xóa bác sĩ.<br>• Theo dõi toàn bộ lịch hẹn và danh sách bệnh nhân. |
 
 
 
